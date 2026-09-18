@@ -1,0 +1,13 @@
+{
+  "name": "loadout-do-setup",
+  "version": "1.0.0",
+  "description": "Inventário de equipamentos compartilhado pela equipe, em estilo de inventário de jogo.",
+  "main": "servidor.js",
+  "scripts": {
+    "start": "node servidor.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true
+}
