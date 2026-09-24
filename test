@@ -1,0 +1,65 @@
+const PORTA = Number(process.env.PORT || 3000);
+const SENHA = process.env.SENHA || "";
+const USUARIO = process.env.USUARIO || "equipe";
+const ARQUIVO = process.env.DADOS || path.join(__dirname, "dados.json");
+const PAGINA = path.join(__dirname, "public", "index.html");
+
+const LIMITE_ITENS = 500;
+const PRIORIDADES = ["essencial", "importante", "desejavel", "extra"];
+const STATUS = ["desejado", "pesquisando", "comprado"];
+
+/* ------------------------------------------------------------------ *
+ * Dados
+ * ------------------------------------------------------------------ */
+
+let estado = { orcamento: 0, itens: {} };
+
+function semente() {
+  const base = [
+    ['Notebook 14" 32GB RAM', "Computador", "essencial", 7800, "pesquisando", "Comparar com a versão de 24GB"],
+    ['Monitor 27" QHD', "Computador", "essencial", 1900, "desejado", ""],
+    ["Cadeira ergonômica", "EPI", "essencial", 2200, "comprado", ""],
+    ["Mesa ajustável 140cm", "Mobiliário", "importante", 1600, "desejado", "Medir a parede antes"],
+    ["Microfone USB cardioide", "Áudio", "importante", 950, "comprado", ""],
+    ["Webcam 1080p", "Vídeo", "importante", 480, "comprado", ""],
+    ["HD externo 2TB", "Armazenamento", "importante", 560, "desejado", "Backup semanal"],
+    ["Nobreak 1200VA", "Energia", "desejavel", 890, "desejado", ""],
+    ["Luminária com CRI alto", "Iluminação", "desejavel", 320, "pesquisando", ""],
+  ];
+  const itens = {};
+  base.forEach((l, i) => {
+    const id = "ex" + String(i + 1).padStart(2, "0");
+    itens[id] = {
+      id,
+      nome: l[0], categoria: l[1], prioridade: l[2], preco: l[3], status: l[4], nota: l[5],
+      por: "", exemplo: true,
+      criadoEm: new Date(Date.now() + i).toISOString(),
+      atualizadoEm: new Date(Date.now() + i).toISOString(),
+    };
+  });
+  return { orcamento: 15000, itens };
+}
+
+function carregar() {
+  try {
+    const bruto = JSON.parse(fs.readFileSync(ARQUIVO, "utf8"));
+    estado = {
+      orcamento: Number(bruto.orcamento) || 0,
+      itens: bruto && typeof bruto.itens === "object" && bruto.itens ? bruto.itens : {},
+    };
+    console.log("Dados carregados de " + ARQUIVO + " (" + Object.keys(estado.itens).length + " itens).");
+  } catch (e) {
+    estado = semente();
+    gravar();
+    console.log("Criei " + ARQUIVO + " com itens de exemplo.");
+  }
+}
+
+function gravar() {
+  const tmp = ARQUIVO + ".tmp";
+  fs.writeFileSync(tmp, JSON.stringify(estado, null, 2), "utf8");
+  fs.renameSync(tmp, ARQUIVO); // troca atômica: nunca deixa o arquivo pela metade
+}
+
+function texto(v, max) {
+  return String(v == null ? "" : v).replace(/[
